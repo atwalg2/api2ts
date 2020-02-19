@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 import js2ts from 'json-to-ts';
 import axios from 'axios';
-import { Input, Icon, Button, Grid, GridRow, GridColumn, Segment } from 'semantic-ui-react';
+import { Input, Button, Grid, GridRow, GridColumn } from 'semantic-ui-react';
+import { traverseAndReplace } from './util';
 
 function App() {
   const [endpoint, setEndpoint] = useState();
@@ -11,8 +12,9 @@ function App() {
   const onRequest = async () => {
     if (endpoint) {
       try {
-        const res = await axios.get(endpoint);
-        setApiResult(res);
+        // TODO: axios throws non 200 requests, so handle this correctly in the future
+        const res = await axios.get(endpoint); 
+        setApiResult(traverseAndReplace(res.data));
       } catch (e) {
         setApiResult({ message: e.message });
       }
@@ -20,6 +22,11 @@ function App() {
       alert('No endpoint provided')
     }
   }
+
+  // TODO: Allow the ability to name, or infer name of root interface from variable name
+  // TODO: reduce arrays to 1 as an option to turn on, and maybe other settings like this
+  // TODO: Style: Make things look cleaner, and figure out why text has rendering glitches
+
   return (
     <div className="App" style={{}}>
       <Grid className="App-Container p-5" centered>
@@ -50,7 +57,7 @@ function App() {
         <GridRow className="m-5">
           <GridColumn className="test-border p-3" mobile={16} tablet={8} computer={8}>
             {apiResult
-              ? <pre style={{ color: 'whitesmoke' }}>{JSON.stringify(apiResult, null, 4)}</pre>
+              ? <pre style={{ color: 'whitesmoke' }}>{`Compact Body (arrays reduced to 1 elem) \n` + JSON.stringify(apiResult, null, 4)}</pre>
               : 'No Results'}
           </GridColumn>
           <GridColumn className="test-border p-3" mobile={16} tablet={8} computer={8}>
